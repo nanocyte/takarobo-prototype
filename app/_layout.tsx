@@ -30,8 +30,14 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        {/* The root screen is defined in app/index.tsx */}
+        {/* <Stack.Screen name="index" options={{ headerShown: false }} /> */}
+        {/* The chat screen is defined in app/chat/[id].tsx */}
+        {/* <Stack.Screen name="chat/[id]" options={{ title: 'Chat' }} /> */}
+        {/* Keep the +not-found route */}
         <Stack.Screen name="+not-found" />
+        {/* Remove the (tabs) route as we are using a simple stack */}
+        {/* <Stack.Screen name="(tabs)" options={{ headerShown: false }} /> */}
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
