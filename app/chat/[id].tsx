@@ -1,11 +1,12 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Image, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { messages as mockMessages } from '../../src/data/mockData'; // Adjust path
 import { Ionicons } from '@expo/vector-icons'; // Assuming usage of Expo's vector icons
 import { Colors } from '../../constants/Colors'; // Import Colors
 import { useColorScheme } from '@/hooks/useColorScheme'; // Import hook
+import Avatar from '../../src/components/Avatar';
 
 // Remove hardcoded color constants
 // const PRIMARY_COLOR = '#007AFF';
@@ -27,6 +28,9 @@ const ChatScreen = () => {
   // State for messages and input text
   const [currentMessages, setCurrentMessages] = useState<Message[]>(mockMessages[contactId] || []);
   const [inputText, setInputText] = useState('');
+
+  // Add new state for menu
+  const [menuVisible, setMenuVisible] = useState(false);
 
   const handleSend = useCallback(() => {
     if (inputText.trim().length === 0) {
@@ -97,12 +101,41 @@ const ChatScreen = () => {
           headerTitleStyle: {
             fontWeight: 'bold',
             fontSize: 18,
-            color: colors.headerTint, // Ensure title color uses theme
+            color: colors.headerTint,
           },
           headerTitleAlign: 'center',
+          // Custom header left with back button
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 15 }}>
-               <Ionicons name="arrow-back" size={24} color={colors.headerTint} />
+              <Ionicons name="arrow-back" size={24} color={colors.headerTint} />
+            </TouchableOpacity>
+          ),
+          // Custom header right with call and menu buttons
+          headerRight: () => (
+            <View style={styles.headerRightContainer}>
+              <TouchableOpacity style={styles.headerButton} onPress={() => {/* Audio call action */}}>
+                <Ionicons name="call" size={22} color={colors.headerTint} />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.headerButton} onPress={() => {/* Video call action */}}>
+                <Ionicons name="videocam" size={22} color={colors.headerTint} />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.headerButton} onPress={() => setMenuVisible(true)}>
+                <Ionicons name="ellipsis-vertical" size={22} color={colors.headerTint} />
+              </TouchableOpacity>
+            </View>
+          ),
+          // Custom header title showing contact with avatar
+          headerTitle: () => (
+            <TouchableOpacity style={styles.headerTitleContainer} onPress={() => {/* View contact profile */}}>
+              <Avatar name={contactName || ""} size={32} />
+              <View style={styles.headerNameContainer}>
+                <Text style={[styles.headerName, { color: colors.headerTint }]} numberOfLines={1}>
+                  {contactName || 'Chat'}
+                </Text>
+                <Text style={[styles.headerStatus, { color: colors.headerTint + '80' }]}>
+                  Online
+                </Text>
+              </View>
             </TouchableOpacity>
           ),
         }}
@@ -124,6 +157,10 @@ const ChatScreen = () => {
         />
         {/* Use theme colors for Input Area */}
         <View style={[styles.inputArea, { backgroundColor: colors.inputBackground, borderTopColor: colors.divider }]}>
+          <TouchableOpacity style={styles.attachButton}>
+            <Ionicons name="add-circle" size={24} color={colors.tint} />
+          </TouchableOpacity>
+          
           <TextInput
             style={[styles.textInput, {
               backgroundColor: colors.inputBackground, 
@@ -133,17 +170,81 @@ const ChatScreen = () => {
             placeholder="Type a message..." 
             placeholderTextColor={colors.secondaryText}
             value={inputText} 
-            onChangeText={setInputText} 
+            onChangeText={setInputText}
+            multiline
           />
-          <TouchableOpacity 
-            style={[styles.sendButton, { backgroundColor: colors.tint }]} 
-            onPress={handleSend} // Attach send handler
-            // disabled={inputText.trim().length === 0} // Optionally disable button if input is empty
-          >
-             <Ionicons name="arrow-up" size={20} color={colors.headerTint} />
-          </TouchableOpacity>
+          
+          {inputText.trim().length > 0 ? (
+            <TouchableOpacity style={[styles.sendButton, { backgroundColor: colors.tint }]} onPress={handleSend}>
+              <Ionicons name="arrow-up" size={20} color={colors.headerTint} />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.micButton}>
+              <Ionicons name="mic" size={24} color={colors.tint} />
+            </TouchableOpacity>
+          )}
         </View>
       </KeyboardAvoidingView>
+      
+      {/* Chat options menu modal */}
+      <Modal
+        transparent={true}
+        visible={menuVisible}
+        animationType="fade"
+        onRequestClose={() => setMenuVisible(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1} 
+          onPress={() => setMenuVisible(false)}
+        >
+          <View style={[styles.menuContainer, { backgroundColor: colors.inputBackground }]}>
+            <TouchableOpacity 
+              style={styles.menuItem} 
+              onPress={() => {
+                setMenuVisible(false);
+                /* View contact info action */
+              }}
+            >
+              <Ionicons name="person" size={20} color={colors.text} />
+              <Text style={[styles.menuText, { color: colors.text }]}>View Contact</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.menuItem} 
+              onPress={() => {
+                setMenuVisible(false);
+                /* Search conversation */
+              }}
+            >
+              <Ionicons name="search" size={20} color={colors.text} />
+              <Text style={[styles.menuText, { color: colors.text }]}>Search</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.menuItem} 
+              onPress={() => {
+                setMenuVisible(false);
+                /* Share contact action */
+              }}
+            >
+              <Ionicons name="share-social" size={20} color={colors.text} />
+              <Text style={[styles.menuText, { color: colors.text }]}>Share Contact</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.menuItem} 
+              onPress={() => {
+                setMenuVisible(false);
+                /* Block/report action */
+              }}
+            >
+              <Ionicons name="alert-circle" size={20} color="#FF3B30" />
+              <Text style={[styles.menuText, { color: "#FF3B30" }]}>Block Contact</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -214,11 +315,12 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    height: 40,
+    maxHeight: 100,
     borderWidth: 1,
     // borderColor: INPUT_BORDER_COLOR, // Removed
     borderRadius: 20,
     paddingHorizontal: 15,
+    paddingVertical: 8,
     fontSize: 15, // Slightly larger input font
     // color: TEXT_COLOR, // Removed
     // backgroundColor: '#FFFFFF', // Removed
@@ -231,6 +333,66 @@ const styles = StyleSheet.create({
     // backgroundColor: PRIMARY_COLOR, // Removed
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  // Add new header styles
+  headerRightContainer: {
+    flexDirection: 'row',
+    marginRight: 15,
+  },
+  headerButton: {
+    marginLeft: 15,
+  },
+  headerTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerNameContainer: {
+    marginLeft: 10,
+  },
+  headerName: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  headerStatus: {
+    fontSize: 12,
+  },
+  // Enhanced input area styles
+  attachButton: {
+    padding: 5,
+    marginRight: 5,
+  },
+  micButton: {
+    padding: 5,
+    marginLeft: 5,
+  },
+  // Menu modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+  },
+  menuContainer: {
+    marginTop: 50,
+    marginRight: 15,
+    borderRadius: 10,
+    width: 170,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    paddingVertical: 5,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+  },
+  menuText: {
+    marginLeft: 10,
+    fontSize: 15,
   },
 });
 

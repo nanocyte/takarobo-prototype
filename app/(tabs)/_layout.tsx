@@ -28,16 +28,24 @@ export default function TabLayout() {
           ),
         }}
       />
-      {/* Add other tabs here if needed, e.g., Settings */}
-      {/* <Tabs.Screen
-        name="settings" // Example: matches app/(tabs)/settings.tsx
+      <Tabs.Screen
+        name="contacts" // Will match app/(tabs)/contacts.tsx
+        options={{
+          title: 'Contacts',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'people' : 'people-outline'} size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="settings" // Will match app/(tabs)/settings.tsx
         options={{
           title: 'Settings',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'settings' : 'settings-outline'} size={24} color={color} />
           ),
         }}
-      /> */}
+      />
     </Tabs>
   );
 } 

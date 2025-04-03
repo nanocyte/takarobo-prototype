@@ -1,7 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter, Href } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { contacts } from '../../src/data/mockData'; // Adjust path if needed
 import Avatar from '../../src/components/Avatar'; // Import the Avatar component
 import { Colors } from '../../constants/Colors'; // Import Colors
@@ -11,6 +12,16 @@ const ContactsScreen = () => {
   const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light'; // Get current color scheme
   const colors = Colors[colorScheme]; // Get color palette
+  const [searchVisible, setSearchVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter contacts based on search query when search is active
+  const filteredContacts = searchVisible 
+    ? contacts.filter(contact => 
+        contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        contact.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : contacts;
 
   // Define an interface for the contact item data
   interface ContactItem {
@@ -51,15 +62,71 @@ const ContactsScreen = () => {
             fontSize: 18,
             color: colors.headerTint,
           },
-          headerTitleAlign: 'center' // Center title
+          headerTitleAlign: 'center',
+          headerLeft: () => (
+            <TouchableOpacity 
+              style={{ marginLeft: 15 }}
+              onPress={() => setSearchVisible(!searchVisible)}>
+              <Ionicons name="search" size={24} color={colors.headerTint} />
+            </TouchableOpacity>
+          ),
+          headerRight: () => (
+            <TouchableOpacity 
+              style={{ marginRight: 15 }}
+              onPress={() => router.push('/contacts')}>
+              <Ionicons name="create" size={24} color={colors.headerTint} />
+            </TouchableOpacity>
+          ),
         }}
       />
+      
+      {/* Search bar - only visible when search is active */}
+      {searchVisible && (
+        <View style={[styles.searchBar, { backgroundColor: colors.inputBackground, borderBottomColor: colors.divider }]}>
+          <Ionicons name="search" size={20} color={colors.secondaryText} />
+          <TextInput
+            style={[styles.searchInput, { color: colors.text }]}
+            placeholder="Search conversations..."
+            placeholderTextColor={colors.secondaryText}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoFocus
+          />
+          {searchQuery !== '' ? (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <Ionicons name="close-circle" size={20} color={colors.secondaryText} />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity onPress={() => setSearchVisible(false)}>
+              <Text style={[styles.cancelSearch, { color: colors.tint }]}>Cancel</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+      
       <FlatList
-        data={contacts}
+        data={filteredContacts}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContentContainer}
+        ListEmptyComponent={
+          searchVisible && filteredContacts.length === 0 ? (
+            <View style={styles.emptySearch}>
+              <Text style={[styles.emptySearchText, { color: colors.secondaryText }]}>
+                No results found for "{searchQuery}"
+              </Text>
+            </View>
+          ) : null
+        }
       />
+
+      {/* Floating action button for new chat */}
+      <TouchableOpacity 
+        style={[styles.fab, { backgroundColor: colors.tint }]}
+        onPress={() => router.push('/contacts')}
+      >
+        <Ionicons name="chatbubble" size={24} color="#FFFFFF" />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -68,8 +135,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    marginLeft: 10,
+    height: 40,
+  },
+  cancelSearch: {
+    marginLeft: 10,
+    fontSize: 16,
+    fontWeight: '500',
+  },
   listContentContainer: {
-    paddingBottom: 10,
+    paddingBottom: 80, // Add space for FAB
   },
   contactItem: {
     flexDirection: 'row',
@@ -81,7 +166,7 @@ const styles = StyleSheet.create({
   contactInfo: {
     flex: 1,
     justifyContent: 'center',
-    marginLeft: 0,
+    marginLeft: 15,
   },
   contactName: {
     fontSize: 17,
@@ -96,6 +181,30 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     alignSelf: 'flex-start',
     marginTop: 2,
+  },
+  emptySearch: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptySearchText: {
+    fontSize: 16,
+  },
+  fab: {
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+    right: 20,
+    bottom: 30,
+    borderRadius: 30,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    zIndex: 1,
   },
 });
 
