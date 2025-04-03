@@ -1,74 +1,101 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, SafeAreaView } from 'react-native';
+import { Stack, useRouter, Href } from 'expo-router';
+import { contacts } from '../../src/data/mockData'; // Adjust path if needed
+import Avatar from '../../src/components/Avatar'; // Import the Avatar component
+import { Colors } from '../../constants/Colors'; // Import Colors
+import { useColorScheme } from '@/hooks/useColorScheme'; // Import hook
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const ContactsScreen = () => {
+  const router = useRouter();
+  const colorScheme = useColorScheme() ?? 'light'; // Get current color scheme
+  const colors = Colors[colorScheme]; // Get color palette
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  // Define an interface for the contact item data
+  interface ContactItem {
+    id: string;
+    name: string;
+    lastMessage: string;
+    timestamp: string;
+    // Add other properties if they exist in your data
+  }
+
+  const renderItem = ({ item }: { item: ContactItem }) => (
+    <TouchableOpacity 
+      style={[styles.contactItem, { backgroundColor: colors.inputBackground, borderBottomColor: colors.divider }]}
+      onPress={() => router.push({ 
+        pathname: '/chat/[id]',
+        params: { id: item.id, name: item.name } 
+      })}
+      accessibilityLabel={`Chat with ${item.name}`}
+    >
+      <Avatar name={item.name} size={50} />
+      <View style={styles.contactInfo}>
+        <Text style={[styles.contactName, { color: colors.text }]}>{item.name}</Text>
+        <Text style={[styles.lastMessage, { color: colors.secondaryText }]} numberOfLines={1}>{item.lastMessage}</Text>
+      </View>
+      <Text style={[styles.timestamp, { color: colors.secondaryText }]}>{item.timestamp}</Text>
+    </TouchableOpacity>
   );
-}
+
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <Stack.Screen 
+        options={{
+          title: 'Chats',
+          headerStyle: { backgroundColor: colors.headerBackground },
+          headerTintColor: colors.headerTint,
+          headerTitleStyle: {
+            fontWeight: 'bold',
+            fontSize: 18,
+            color: colors.headerTint,
+          },
+          headerTitleAlign: 'center' // Center title
+        }}
+      />
+      <FlatList
+        data={contacts}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContentContainer}
+      />
+    </SafeAreaView>
+  );
+};
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+  },
+  listContentContainer: {
+    paddingBottom: 10,
+  },
+  contactItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  contactInfo: {
+    flex: 1,
+    justifyContent: 'center',
+    marginLeft: 0,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  contactName: {
+    fontSize: 17,
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  lastMessage: {
+    fontSize: 14,
+  },
+  timestamp: {
+    fontSize: 12,
+    marginLeft: 10,
+    alignSelf: 'flex-start',
+    marginTop: 2,
   },
 });
+
+export default ContactsScreen; 
