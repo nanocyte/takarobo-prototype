@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter, Href } from 'expo-router';
 import { contacts } from '../../src/data/mockData'; // Adjust path if needed
 import Avatar from '../../src/components/Avatar'; // Import the Avatar component
@@ -39,7 +40,7 @@ const ContactsScreen = () => {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'right', 'left']}>
       <Stack.Screen 
         options={{
           title: 'Chats',

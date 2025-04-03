@@ -5,6 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -28,23 +29,25 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        {/* Reference the tabs layout. It will handle its own header/tabs. */}
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        {/* The chat screen remains a separate stack screen, presented modally or pushed */}
-        <Stack.Screen 
-          name="chat/[id]" 
-          options={{ 
-            // We configure header options within chat/[id].tsx itself
-            headerShown: false, 
-            // presentation: 'modal' // Optional: If you want the chat screen to slide up
-          }} 
-        />
-        {/* Keep the +not-found route */}
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack>
+          {/* Reference the tabs layout. It will handle its own header/tabs. */}
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          {/* The chat screen remains a separate stack screen, presented modally or pushed */}
+          <Stack.Screen 
+            name="chat/[id]" 
+            options={{ 
+              // We configure header options within chat/[id].tsx itself
+              headerShown: false, 
+              // presentation: 'modal' // Optional: If you want the chat screen to slide up
+            }} 
+          />
+          {/* Keep the +not-found route */}
+          <Stack.Screen name="+not-found" />
+        </Stack>
+        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { messages as mockMessages } from '../../src/data/mockData'; // Adjust path
 import { Ionicons } from '@expo/vector-icons'; // Assuming usage of Expo's vector icons
@@ -87,7 +88,7 @@ const ChatScreen = () => {
 
   return (
     // Use theme colors for SafeAreaView and header
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.headerBackground }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.headerBackground }]} edges={['top', 'right', 'left']}>
       <Stack.Screen
         options={{
           title: contactName || 'Chat',
